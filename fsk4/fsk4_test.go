@@ -1,0 +1,259 @@
+package fsk4
+
+import (
+	"testing"
+)
+
+// MockRadio implements the Radio interface for testing
+type MockRadio struct {
+	frequencies []uint32
+	freqStep    float64
+	standby     bool
+	closed      bool
+}
+
+func NewMockRadio(freqStep float64) *MockRadio {
+	return &MockRadio{
+		frequencies: make([]uint32, 0),
+		freqStep:    freqStep,
+	}
+}
+
+func (m *MockRadio) Transmit(freq uint32) error {
+	m.frequencies = append(m.frequencies, freq)
+	return nil
+}
+
+func (m *MockRadio) Standby() error {
+	m.standby = true
+	return nil
+}
+
+func (m *MockRadio) Close() error {
+	m.closed = true
+	return nil
+}
+
+func (m *MockRadio) GetFreqStep() float64 {
+	return m.freqStep
+}
+
+func TestNewFSK4(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
+
+	if fsk.frequency != 433000000 {
+		t.Errorf("frequency = %f, want 433000000", fsk.frequency)
+	}
+	if fsk.shift != 270 {
+		t.Errorf("shift = %d, want 270", fsk.shift)
+	}
+	if fsk.rate != 100 {
+		t.Errorf("rate = %d, want 100", fsk.rate)
+	}
+}
+
+func TestConfigure(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
+
+	err := fsk.Configure()
+	if err != nil {
+		t.Errorf("Configure() error = %v", err)
+	}
+
+	// Check that tones are configured correctly
+	// With shift=270 and step=61, getRawShift should return 4 or 5
+	expectedBase := fsk.getRawShift(270)
+	for i := 0; i < 4; i++ {
+		expected := expectedBase * int32(i)
+		if fsk.tones[i] != expected {
+			t.Errorf("tones[%d] = %d, want %d", i, fsk.tones[i], expected)
+		}
+	}
+}
+
+func TestGettersAndSetters(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
+
+	// Test GetFrequency
+	if fsk.GetFrequency() != 433000000 {
+		t.Errorf("GetFrequency() = %f, want 433000000", fsk.GetFrequency())
+	}
+
+	// Test SetFrequency
+	fsk.SetFrequency(144000000)
+	if fsk.GetFrequency() != 144000000 {
+		t.Errorf("after SetFrequency(), GetFrequency() = %f, want 144000000", fsk.GetFrequency())
+	}
+
+	// Test GetRate
+	if fsk.GetRate() != 100 {
+		t.Errorf("GetRate() = %d, want 100", fsk.GetRate())
+	}
+
+	// Test SetSampleRate
+	fsk.SetSampleRate(200)
+	if fsk.GetRate() != 200 {
+		t.Errorf("after SetSampleRate(), GetRate() = %d, want 200", fsk.GetRate())
+	}
+
+	// Test SetShift
+	fsk.SetShift(500)
+	if fsk.shift != 500 {
+		t.Errorf("after SetShift(), shift = %d, want 500", fsk.shift)
+	}
+}
+
+func TestClose(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
+
+	err := fsk.Close()
+	if err != nil {
+		t.Errorf("Close() error = %v", err)
+	}
+	if !radio.closed {
+		t.Error("Close() did not close the radio")
+	}
+}
+
+func TestStandby(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
+
+	err := fsk.Standby()
+	if err != nil {
+		t.Errorf("Standby() error = %v", err)
+	}
+	if !radio.standby {
+		t.Error("Standby() did not put radio in standby mode")
+	}
+}
+
+func TestGetRawShift(t *testing.T) {
+	tests := []struct {
+		name     string
+		freqStep float64
+		shift    int32
+		expected int32
+	}{
+		{"zero shift", 61.0, 0, 0},
+		{"shift below minimum", 61.0, 25, 0},
+		{"exact multiple", 61.0, 122, 2},
+		{"round down", 61.0, 100, 2},
+		{"round up", 61.0, 170, 3},               // 170 % 61 = 48, 48 >= 30, so rounds up
+		{"negative shift round", 61.0, -170, -3}, // same logic for negative
+		{"negative shift exact", 61.0, -122, -2},
+		{"large step", 100.0, 270, 3},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			radio := NewMockRadio(tt.freqStep)
+			fsk := NewFSK4(radio, 433000000, 270, 100)
+
+			got := fsk.getRawShift(tt.shift)
+			if got != tt.expected {
+				t.Errorf("getRawShift(%d) = %d, want %d", tt.shift, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestAbs(t *testing.T) {
+	tests := []struct {
+		input    int32
+		expected int32
+	}{
+		{0, 0},
+		{5, 5},
+		{-5, 5},
+		{-2147483648, -2147483648}, // overflow case
+		{2147483647, 2147483647},
+	}
+
+	for _, tt := range tests {
+		got := abs(tt.input)
+		if got != tt.expected {
+			t.Errorf("abs(%d) = %d, want %d", tt.input, got, tt.expected)
+		}
+	}
+}
+
+func TestWriteByte(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
+	fsk.Configure()
+
+	// Write a byte and check that 4 symbols were transmitted
+	err := fsk.writeByte(0b11_10_01_00) // symbols: 3, 2, 1, 0
+	if err != nil {
+		t.Errorf("writeByte() error = %v", err)
+	}
+
+	if len(radio.frequencies) != 4 {
+		t.Errorf("writeByte() transmitted %d symbols, want 4", len(radio.frequencies))
+	}
+}
+
+func TestWrite(t *testing.T) {
+	radio := NewMockRadio(61.0)
+	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
+	fsk.Configure()
+
+	data := []byte{0xAB, 0xCD}
+	n, err := fsk.Write(data)
+	if err != nil {
+		t.Errorf("Write() error = %v", err)
+	}
+	if n != 2 {
+		t.Errorf("Write() returned %d, want 2", n)
+	}
+
+	// 2 bytes = 8 symbols
+	if len(radio.frequencies) != 8 {
+		t.Errorf("Write() transmitted %d symbols, want 8", len(radio.frequencies))
+	}
+
+	// Radio should be in standby after write
+	if !radio.standby {
+		t.Error("Write() did not put radio in standby mode")
+	}
+}
+
+func TestSymbolExtraction(t *testing.T) {
+	// Test that symbols are extracted MSB first
+	tests := []struct {
+		input   byte
+		symbols []byte
+	}{
+		{0b00_00_00_00, []byte{0, 0, 0, 0}},
+		{0b11_11_11_11, []byte{3, 3, 3, 3}},
+		{0b11_10_01_00, []byte{3, 2, 1, 0}},
+		{0b00_01_10_11, []byte{0, 1, 2, 3}},
+		{0b10_10_10_10, []byte{2, 2, 2, 2}},
+	}
+
+	for _, tt := range tests {
+		radio := NewMockRadio(1.0) // Step of 1 for easy calculation
+		fsk := NewFSK4(radio, 1000, 1, 1000000)
+		fsk.Configure()
+
+		fsk.writeByte(tt.input)
+
+		for i, expectedSymbol := range tt.symbols {
+			// With base freq 1000 and tones [0, 1, 2, 3],
+			// transmitted freq should be 1000 + symbol
+			expectedFreq := uint32(1000 + int32(expectedSymbol)*fsk.tones[1]/1)
+			if i < len(radio.frequencies) {
+				// Verify the correct symbol was selected by checking relative frequencies
+				if radio.frequencies[i] != uint32(1000)+uint32(fsk.tones[expectedSymbol]) {
+					t.Errorf("byte 0x%02X symbol %d: got freq %d, want %d",
+						tt.input, i, radio.frequencies[i], expectedFreq)
+				}
+			}
+		}
+	}
+}

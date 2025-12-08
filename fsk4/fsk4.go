@@ -10,7 +10,7 @@ type FSK4 struct {
 	base  uint64
 	shift uint32
 	rate  uint32
-	tones [4]int32
+	tones [4]uint32
 }
 
 // NewFSK4 creates a new FSK4 modem instance.
@@ -23,11 +23,15 @@ func NewFSK4(radio Radio, base uint64, shift, rate uint32) *FSK4 {
 	}
 }
 
+// Close releases resources associated with the FSK4 modem.
+func (r *FSK4) Close() error {
+	return r.radio.Close()
+}
+
 // Configure sets up the FSK4 modem parameters.
 func (r *FSK4) Configure() error {
-	shiftFreq := r.getRawShift(int32(r.shift))
 	for i := range 4 {
-		r.tones[i] = shiftFreq * int32(i)
+		r.tones[i] = r.shift * uint32(i)
 	}
 
 	return nil
@@ -40,11 +44,6 @@ func (r *FSK4) Write(data []byte) (int, error) {
 		return 0, err
 	}
 	return len(data), nil
-}
-
-// Close releases resources associated with the FSK4 modem.
-func (r *FSK4) Close() error {
-	return r.radio.Close()
 }
 
 // GetFrequency returns the current transmission frequency.
@@ -112,30 +111,4 @@ func (r *FSK4) tone(symbol byte) {
 	r.radio.Transmit(freq)
 	// hold for one symbol period
 	time.Sleep(time.Duration(1000000/r.rate) * time.Microsecond)
-}
-
-func (r *FSK4) getRawShift(shift int32) int32 {
-	// calculate module carrier frequency resolution
-	step := int32(r.radio.GetFreqStep())
-
-	// check minimum shift value
-	if abs(shift) < step/2 {
-		return 0
-	}
-
-	// round shift to multiples of frequency step size
-	if abs(shift)%step < (step / 2) {
-		return shift / step
-	}
-	if shift < 0 {
-		return (shift / step) - 1
-	}
-	return (shift / step) + 1
-}
-
-func abs(x int32) int32 {
-	if x < 0 {
-		return -x
-	}
-	return x
 }

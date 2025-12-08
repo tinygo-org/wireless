@@ -63,12 +63,10 @@ func TestConfigure(t *testing.T) {
 	}
 
 	// Check that tones are configured correctly
-	// With shift=270 and step=61, getRawShift should return 4 or 5
-	expectedBase := fsk.getRawShift(270)
-	for i := 0; i < 4; i++ {
-		expected := expectedBase * int32(i)
-		if fsk.tones[i] != expected {
-			t.Errorf("tones[%d] = %d, want %d", i, fsk.tones[i], expected)
+	expectedTones := [4]uint32{0, 270, 540, 810}
+	for i, tone := range fsk.tones {
+		if tone != expectedTones[i] {
+			t.Errorf("tones[%d] = %d, want %d", i, tone, expectedTones[i])
 		}
 	}
 }
@@ -129,56 +127,6 @@ func TestStandby(t *testing.T) {
 	}
 	if !radio.standby {
 		t.Error("Standby() did not put radio in standby mode")
-	}
-}
-
-func TestGetRawShift(t *testing.T) {
-	tests := []struct {
-		name     string
-		freqStep uint64
-		shift    int32
-		expected int32
-	}{
-		{"zero shift", 61, 0, 0},
-		{"shift below minimum", 61, 25, 0},
-		{"exact multiple", 61, 122, 2},
-		{"round down", 61, 100, 2},
-		{"round up", 61, 170, 3},               // 170 % 61 = 48, 48 >= 30, so rounds up
-		{"negative shift round", 61, -170, -3}, // same logic for negative
-		{"negative shift exact", 61, -122, -2},
-		{"large step", 100, 270, 3},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			radio := NewMockRadio(tt.freqStep)
-			fsk := NewFSK4(radio, 433000000, 270, 100)
-
-			got := fsk.getRawShift(tt.shift)
-			if got != tt.expected {
-				t.Errorf("getRawShift(%d) = %d, want %d", tt.shift, got, tt.expected)
-			}
-		})
-	}
-}
-
-func TestAbs(t *testing.T) {
-	tests := []struct {
-		input    int32
-		expected int32
-	}{
-		{0, 0},
-		{5, 5},
-		{-5, 5},
-		{-2147483648, -2147483648}, // overflow case
-		{2147483647, 2147483647},
-	}
-
-	for _, tt := range tests {
-		got := abs(tt.input)
-		if got != tt.expected {
-			t.Errorf("abs(%d) = %d, want %d", tt.input, got, tt.expected)
-		}
 	}
 }
 
@@ -246,7 +194,7 @@ func TestSymbolExtraction(t *testing.T) {
 		for i, expectedSymbol := range tt.symbols {
 			// With base freq 1000 and tones [0, 1, 2, 3],
 			// transmitted freq should be 1000 + symbol
-			expectedFreq := uint32(1000 + int32(expectedSymbol)*fsk.tones[1]/1)
+			expectedFreq := uint32(1000 + uint32(expectedSymbol)*fsk.tones[1]/1)
 			if i < len(radio.frequencies) {
 				// Verify the correct symbol was selected by checking relative frequencies
 				if radio.frequencies[i] != uint64(1000)+uint64(fsk.tones[expectedSymbol]) {

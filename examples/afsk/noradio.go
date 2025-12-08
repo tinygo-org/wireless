@@ -4,8 +4,8 @@ package main
 
 import "tinygo.org/x/wireless/afsk"
 
-func initRadio() afsk.Radio {
-	return &NoRadio{}
+func initRadio() *afsk.AFSK {
+	return afsk.NewAFSK(&NoRadio{})
 }
 
 type NoRadio struct{}

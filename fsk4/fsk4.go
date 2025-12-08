@@ -1,26 +1,25 @@
 package fsk4
 
 import (
-	"math"
 	"time"
 )
 
 // FSK4 represents an FSK4 modem.
 type FSK4 struct {
-	radio     Radio
-	frequency float64
-	shift     uint32
-	rate      uint32
-	tones     [4]int32
+	radio Radio
+	base  uint64
+	shift uint32
+	rate  uint32
+	tones [4]int32
 }
 
 // NewFSK4 creates a new FSK4 modem instance.
-func NewFSK4(radio Radio, frequency float64, shift, rate uint32) *FSK4 {
+func NewFSK4(radio Radio, base uint64, shift, rate uint32) *FSK4 {
 	return &FSK4{
-		radio:     radio,
-		frequency: frequency,
-		shift:     shift,
-		rate:      rate,
+		radio: radio,
+		base:  base,
+		shift: shift,
+		rate:  rate,
 	}
 }
 
@@ -49,8 +48,8 @@ func (r *FSK4) Close() error {
 }
 
 // GetFrequency returns the current transmission frequency.
-func (r *FSK4) GetFrequency() float64 {
-	return r.frequency
+func (r *FSK4) GetBaseFrequency() uint64 {
+	return r.base
 }
 
 // GetRate returns the current sample rate.
@@ -58,9 +57,9 @@ func (r *FSK4) GetRate() uint32 {
 	return r.rate
 }
 
-// SetFrequency sets the transmission frequency.
-func (r *FSK4) SetFrequency(freq float64) {
-	r.frequency = freq
+// SetBaseFrequency sets the base transmission frequency.
+func (r *FSK4) SetBaseFrequency(freq uint64) {
+	r.base = freq
 }
 
 // SetSampleRate sets the sample rate.
@@ -109,15 +108,15 @@ func (r *FSK4) writeByte(data byte) error {
 }
 
 func (r *FSK4) tone(symbol byte) {
-	freq := r.frequency + float64(r.tones[symbol])
-	r.radio.Transmit(uint32(freq))
+	freq := r.base + uint64(r.tones[symbol])
+	r.radio.Transmit(freq)
 	// hold for one symbol period
 	time.Sleep(time.Duration(1000000/r.rate) * time.Microsecond)
 }
 
 func (r *FSK4) getRawShift(shift int32) int32 {
 	// calculate module carrier frequency resolution
-	step := int32(math.Round(r.radio.GetFreqStep()))
+	step := int32(r.radio.GetFreqStep())
 
 	// check minimum shift value
 	if abs(shift) < step/2 {

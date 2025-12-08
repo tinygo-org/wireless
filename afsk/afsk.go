@@ -12,6 +12,11 @@ func NewAFSK(radio Radio) *AFSK {
 	}
 }
 
+// Close releases resources associated with the AFSK modem.
+func (r *AFSK) Close() error {
+	return r.radio.Close()
+}
+
 // Configure sets up the AFSK modem parameters.
 func (r *AFSK) Configure() error {
 	return nil

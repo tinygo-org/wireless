@@ -18,14 +18,14 @@ func main() {
 	// set tone frequency 1
 	frequency := 1200 // Example frequency in Hz
 	println("Setting tone frequency to", frequency, "Hz")
-	radio.Transmit(uint64(frequency))
+	radio.Tone(uint64(frequency))
 
 	time.Sleep(2 * time.Second)
 
 	// set tone frequency 2
 	frequency2 := 2200 // Example frequency in Hz
 	println("Setting tone frequency to", frequency2, "Hz")
-	radio.Transmit(uint64(frequency2))
+	radio.Tone(uint64(frequency2))
 
 	time.Sleep(2 * time.Second)
 

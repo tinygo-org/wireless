@@ -8,6 +8,4 @@ type Radio interface {
 	Standby() error
 	// Close releases resources associated with the radio.
 	Close() error
-	// GetFreqStep returns the frequency step size of the radio.
-	GetFreqStep() uint64
 }

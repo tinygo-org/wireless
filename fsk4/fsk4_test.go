@@ -6,20 +6,20 @@ import (
 
 // MockRadio implements the Radio interface for testing
 type MockRadio struct {
-	frequencies []uint32
-	freqStep    float64
+	frequencies []uint64
+	freqStep    uint64
 	standby     bool
 	closed      bool
 }
 
-func NewMockRadio(freqStep float64) *MockRadio {
+func NewMockRadio(freqStep uint64) *MockRadio {
 	return &MockRadio{
-		frequencies: make([]uint32, 0),
+		frequencies: make([]uint64, 0),
 		freqStep:    freqStep,
 	}
 }
 
-func (m *MockRadio) Transmit(freq uint32) error {
+func (m *MockRadio) Transmit(freq uint64) error {
 	m.frequencies = append(m.frequencies, freq)
 	return nil
 }
@@ -34,7 +34,7 @@ func (m *MockRadio) Close() error {
 	return nil
 }
 
-func (m *MockRadio) GetFreqStep() float64 {
+func (m *MockRadio) GetFreqStep() uint64 {
 	return m.freqStep
 }
 
@@ -42,8 +42,8 @@ func TestNewFSK4(t *testing.T) {
 	radio := NewMockRadio(61.0)
 	fsk := NewFSK4(radio, 433000000, 270, 100)
 
-	if fsk.frequency != 433000000 {
-		t.Errorf("frequency = %f, want 433000000", fsk.frequency)
+	if fsk.base != 433000000 {
+		t.Errorf("base = %d, want 433000000", fsk.base)
 	}
 	if fsk.shift != 270 {
 		t.Errorf("shift = %d, want 270", fsk.shift)
@@ -77,15 +77,15 @@ func TestGettersAndSetters(t *testing.T) {
 	radio := NewMockRadio(61.0)
 	fsk := NewFSK4(radio, 433000000, 270, 100)
 
-	// Test GetFrequency
-	if fsk.GetFrequency() != 433000000 {
-		t.Errorf("GetFrequency() = %f, want 433000000", fsk.GetFrequency())
+	// Test GetBaseFrequency
+	if fsk.GetBaseFrequency() != 433000000 {
+		t.Errorf("GetBaseFrequency() = %d, want 433000000", fsk.GetBaseFrequency())
 	}
 
-	// Test SetFrequency
-	fsk.SetFrequency(144000000)
-	if fsk.GetFrequency() != 144000000 {
-		t.Errorf("after SetFrequency(), GetFrequency() = %f, want 144000000", fsk.GetFrequency())
+	// Test SetBaseFrequency
+	fsk.SetBaseFrequency(144000000)
+	if fsk.GetBaseFrequency() != 144000000 {
+		t.Errorf("after SetBaseFrequency(), GetBaseFrequency() = %d, want 144000000", fsk.GetBaseFrequency())
 	}
 
 	// Test GetRate
@@ -135,18 +135,18 @@ func TestStandby(t *testing.T) {
 func TestGetRawShift(t *testing.T) {
 	tests := []struct {
 		name     string
-		freqStep float64
+		freqStep uint64
 		shift    int32
 		expected int32
 	}{
-		{"zero shift", 61.0, 0, 0},
-		{"shift below minimum", 61.0, 25, 0},
-		{"exact multiple", 61.0, 122, 2},
-		{"round down", 61.0, 100, 2},
-		{"round up", 61.0, 170, 3},               // 170 % 61 = 48, 48 >= 30, so rounds up
-		{"negative shift round", 61.0, -170, -3}, // same logic for negative
-		{"negative shift exact", 61.0, -122, -2},
-		{"large step", 100.0, 270, 3},
+		{"zero shift", 61, 0, 0},
+		{"shift below minimum", 61, 25, 0},
+		{"exact multiple", 61, 122, 2},
+		{"round down", 61, 100, 2},
+		{"round up", 61, 170, 3},               // 170 % 61 = 48, 48 >= 30, so rounds up
+		{"negative shift round", 61, -170, -3}, // same logic for negative
+		{"negative shift exact", 61, -122, -2},
+		{"large step", 100, 270, 3},
 	}
 
 	for _, tt := range tests {
@@ -249,7 +249,7 @@ func TestSymbolExtraction(t *testing.T) {
 			expectedFreq := uint32(1000 + int32(expectedSymbol)*fsk.tones[1]/1)
 			if i < len(radio.frequencies) {
 				// Verify the correct symbol was selected by checking relative frequencies
-				if radio.frequencies[i] != uint32(1000)+uint32(fsk.tones[expectedSymbol]) {
+				if radio.frequencies[i] != uint64(1000)+uint64(fsk.tones[expectedSymbol]) {
 					t.Errorf("byte 0x%02X symbol %d: got freq %d, want %d",
 						tt.input, i, radio.frequencies[i], expectedFreq)
 				}

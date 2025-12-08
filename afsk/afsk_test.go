@@ -6,18 +6,18 @@ import (
 
 // MockRadio implements the Radio interface for testing
 type MockRadio struct {
-	frequencies []uint32
+	frequencies []uint64
 	standby     bool
 	closed      bool
 }
 
 func NewMockRadio() *MockRadio {
 	return &MockRadio{
-		frequencies: make([]uint32, 0),
+		frequencies: make([]uint64, 0),
 	}
 }
 
-func (m *MockRadio) Transmit(freq uint32) error {
+func (m *MockRadio) Transmit(freq uint64) error {
 	m.frequencies = append(m.frequencies, freq)
 	return nil
 }
@@ -57,13 +57,13 @@ func TestConfigure(t *testing.T) {
 func TestTone(t *testing.T) {
 	tests := []struct {
 		name     string
-		freq     float64
-		expected uint32
+		freq     uint64
+		expected uint64
 	}{
-		{"low frequency", 1200.0, 1200},
-		{"high frequency", 2200.0, 2200},
-		{"zero frequency", 0.0, 0},
-		{"fractional frequency rounds down", 1500.7, 1500},
+		{"low frequency", 1200, 1200},
+		{"high frequency", 2200, 2200},
+		{"zero frequency", 0, 0},
+		{"fractional frequency rounds down", 1500, 1500},
 	}
 
 	for _, tt := range tests {
@@ -78,7 +78,7 @@ func TestTone(t *testing.T) {
 				return
 			}
 			if radio.frequencies[0] != tt.expected {
-				t.Errorf("Tone(%f) transmitted %d, want %d", tt.freq, radio.frequencies[0], tt.expected)
+				t.Errorf("Tone(%d) transmitted %d, want %d", tt.freq, radio.frequencies[0], tt.expected)
 			}
 		})
 	}
@@ -89,7 +89,7 @@ func TestToneMultipleCalls(t *testing.T) {
 	afsk := NewAFSK(radio)
 
 	// Simulate AFSK modulation with mark and space frequencies
-	frequencies := []float64{1200, 2200, 1200, 1200, 2200}
+	frequencies := []uint64{1200, 2200, 1200, 1200, 2200}
 	for _, freq := range frequencies {
 		afsk.Tone(freq)
 	}
@@ -99,8 +99,8 @@ func TestToneMultipleCalls(t *testing.T) {
 	}
 
 	for i, expected := range frequencies {
-		if radio.frequencies[i] != uint32(expected) {
-			t.Errorf("frequencies[%d] = %d, want %d", i, radio.frequencies[i], uint32(expected))
+		if radio.frequencies[i] != uint64(expected) {
+			t.Errorf("frequencies[%d] = %d, want %d", i, radio.frequencies[i], uint64(expected))
 		}
 	}
 }

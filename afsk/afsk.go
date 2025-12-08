@@ -18,8 +18,8 @@ func (r *AFSK) Configure() error {
 }
 
 // SetFrequency sets the transmission frequency.
-func (r *AFSK) Tone(freq float64) {
-	r.radio.Transmit(uint32(freq))
+func (r *AFSK) Tone(freq uint64) {
+	r.radio.Transmit(freq)
 }
 
 // Standby puts the radio in standby mode.

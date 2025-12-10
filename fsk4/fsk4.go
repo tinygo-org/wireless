@@ -76,6 +76,15 @@ func (r *FSK4) Standby() error {
 	return r.radio.Standby()
 }
 
+// WriteSymbols sends FSK4 symbols directly (values 0-3).
+// This is useful for protocols like WSPR that provide pre-encoded symbols.
+func (r *FSK4) WriteSymbols(symbols []int8) error {
+	for _, symbol := range symbols {
+		r.tone(byte(symbol & 0x03))
+	}
+	return r.Standby()
+}
+
 func SetCorrection(offsets [4]int, length float32) {
 	// Placeholder implementation
 }

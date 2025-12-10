@@ -1,6 +1,7 @@
 // FSK4 modem example using Si5351 as the frequency generator.
 //
 // tinygo flash -size short -tags=si5351 -target=pico -monitor ./examples/fsk4
+// tinygo flash -size short -tags=featherwing -target=pybadge -monitor ./examples/fsk4
 package main
 
 import (

@@ -1,4 +1,4 @@
-//go:build !si5351
+//go:build !si5351 && !featherwing
 
 package main
 

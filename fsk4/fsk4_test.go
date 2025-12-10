@@ -205,3 +205,77 @@ func TestSymbolExtraction(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteSymbols(t *testing.T) {
+	radio := NewMockRadio(61)
+	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
+	fsk.Configure()
+
+	symbols := []int8{0, 1, 2, 3, 3, 2, 1, 0}
+	err := fsk.WriteSymbols(symbols)
+	if err != nil {
+		t.Errorf("WriteSymbols() error = %v", err)
+	}
+
+	// Should transmit 8 symbols
+	if len(radio.frequencies) != 8 {
+		t.Errorf("WriteSymbols() transmitted %d frequencies, want 8", len(radio.frequencies))
+	}
+
+	// Verify frequencies correspond to symbols
+	for i, symbol := range symbols {
+		expectedFreq := uint64(433000000) + uint64(fsk.tones[symbol])
+		if radio.frequencies[i] != expectedFreq {
+			t.Errorf("frequencies[%d] = %d, want %d", i, radio.frequencies[i], expectedFreq)
+		}
+	}
+
+	// Radio should be in standby after WriteSymbols
+	if !radio.standby {
+		t.Error("WriteSymbols() did not put radio in standby mode")
+	}
+}
+
+func TestWriteSymbolsMasksToValidRange(t *testing.T) {
+	radio := NewMockRadio(61)
+	fsk := NewFSK4(radio, 433000000, 270, 1000000)
+	fsk.Configure()
+
+	// Test that symbols are masked to 0-3 range
+	symbols := []int8{4, 5, 6, 7, -1, -2}
+	err := fsk.WriteSymbols(symbols)
+	if err != nil {
+		t.Errorf("WriteSymbols() error = %v", err)
+	}
+
+	// 4 & 0x03 = 0, 5 & 0x03 = 1, 6 & 0x03 = 2, 7 & 0x03 = 3
+	// -1 & 0x03 = 3, -2 & 0x03 = 2
+	expectedSymbols := []byte{0, 1, 2, 3, 3, 2}
+	for i, expected := range expectedSymbols {
+		expectedFreq := uint64(433000000) + uint64(fsk.tones[expected])
+		if radio.frequencies[i] != expectedFreq {
+			t.Errorf("frequencies[%d] = %d, want %d (symbol %d)", i, radio.frequencies[i], expectedFreq, expected)
+		}
+	}
+}
+
+func TestWriteSymbolsEmpty(t *testing.T) {
+	radio := NewMockRadio(61)
+	fsk := NewFSK4(radio, 433000000, 270, 1000000)
+	fsk.Configure()
+
+	symbols := []int8{}
+	err := fsk.WriteSymbols(symbols)
+	if err != nil {
+		t.Errorf("WriteSymbols() error = %v", err)
+	}
+
+	if len(radio.frequencies) != 0 {
+		t.Errorf("WriteSymbols() transmitted %d frequencies, want 0", len(radio.frequencies))
+	}
+
+	// Should still go to standby
+	if !radio.standby {
+		t.Error("WriteSymbols() did not put radio in standby mode")
+	}
+}

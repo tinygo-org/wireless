@@ -1,6 +1,7 @@
 // AFSK modem example using Si5351 as the frequency generator.
 //
 // tinygo flash -size short -tags=si5351 -target=pico -monitor ./examples/afsk
+// tinygo flash -size short -tags=featherwing -target=pybadge -monitor ./examples/afsk
 package main
 
 import (

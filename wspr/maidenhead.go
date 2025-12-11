@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Ted Dunning
+ * Portions of this code copyright 2025 Ted Dunning
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 )
 
 /*
-This file contains support for foward and reverse encoding of lat-long pairs
+This file contains support for forward and reverse encoding of lat-long pairs
 into the Maidenhead representation.
 */
 

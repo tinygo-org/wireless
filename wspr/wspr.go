@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Ted Dunning
+ * Portions of this code copyright 2025 Ted Dunning
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,36 @@ import (
 	"errors"
 )
 
-func WsprMessage(callsign, location string, power int) ([]int8, error) {
-	bits, err := PackBits(callsign, location, power)
+type Message struct {
+	callsign string
+	location string
+	power    int
+}
+
+func NewMessage(callsign, location string, power int) *Message {
+	return &Message{
+		callsign: callsign,
+		location: location,
+		power:    power,
+	}
+}
+
+func (m *Message) Write(data []byte) (int, error) {
+	bits, err := PackBits(m.callsign, m.location, m.power)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	message := Parity(bits)
-	message = interleave(message)
-	for i := 0; i < len(message); i++ {
-		message[i] = 2*message[i] + sync[i]
+
+	if _, err := Parity(bits, data); err != nil {
+		return 0, err
 	}
-	return message, nil
+
+	interleave(data)
+	for i := 0; i < len(data); i++ {
+		data[i] = 2*data[i] + sync[i]
+	}
+
+	return len(data), nil
 }
 
 /*
@@ -46,24 +65,24 @@ elements with invalid destinations are simply left in place. That change also
 makes this rearrangement frustratingly non-involutional, so it can't be done in
 place.
 */
-func interleave(message []int8) []int8 {
+func interleave(message []byte) {
 	n := len(message)
-	dest := make([]int8, len(message))
+	dest := make([]byte, len(message))
 	si := 0
-	for i := 0; i < 255; i++ {
+	for i := range 255 {
 		ix := reverseByte(i)
 		if ix < n {
 			dest[ix] = message[si]
 			si++
 			if si >= len(message) {
-				return dest
+				break
 			}
 		}
 	}
-	return nil
+	copy(message, dest)
 }
 
-var sync = []int8{
+var sync = []byte{
 	1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1,
 	0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
@@ -93,9 +112,11 @@ func PackBits(callsign, location string, power int) (uint64, error) {
 	return (c << 28) + (l << 13) + (Power(power) << 6), nil
 }
 
-func Parity(message uint64) []int8 {
+func Parity(message uint64, data []byte) (int, error) {
+	if len(data) < 162 {
+		return 0, errors.New("data slice too small for parity output")
+	}
 	// these hold the 162 bits of output, one bit per byte
-	out := make([]int8, 162)
 	// output counter
 	k := 0
 	s1 := uint32(0)
@@ -103,24 +124,24 @@ func Parity(message uint64) []int8 {
 	for i := 55; i >= 6; i-- {
 		bit := (message >> i) & 1
 		s1 = (s1 << 1) | uint32(bit)
-		out[k] = int8(parity32(s1 & 0xF2D05351))
+		data[k] = byte(parity32(s1 & 0xF2D05351))
 		k++
 
 		s2 = (s2 << 1) | uint32(bit)
-		out[k] = int8(parity32(s1 & 0xE4613C47))
+		data[k] = byte(parity32(s1 & 0xE4613C47))
 		k++
 	}
 	// these bottom bits are all zeros
-	for i := 0; i < 31; i++ {
+	for range 31 {
 		s1 = s1 << 1
-		out[k] = int8(parity32(s1 & 0xF2D05351))
+		data[k] = byte(parity32(s1 & 0xF2D05351))
 		k++
 
 		s2 = s2 << 1
-		out[k] = int8(parity32(s1 & 0xE4613C47))
+		data[k] = byte(parity32(s1 & 0xE4613C47))
 		k++
 	}
-	return out
+	return k, nil
 }
 
 func reverseByte(in int) int {
@@ -191,7 +212,7 @@ func CallSign(callsign string) (uint64, error) {
 		encoded, err = encodeChar(callsign[tail], ALPHA|SPACE, encoded)
 		encodeCount++
 	}
-	return encoded, nil
+	return encoded, err
 }
 
 /*

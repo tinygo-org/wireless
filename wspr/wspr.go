@@ -43,9 +43,9 @@ func NewMessage(callsign, location string, power int) (Message, error) {
 	return Message((c << 28) + (l << 13) + (Power(power) << 6)), nil
 }
 
-// WriteBits writes the WSPR message with parity bits and interleaving.
-func (m Message) WriteBits(destinationBits []byte) (int, error) {
-	n, err := m.WriteParityBits(destinationBits)
+// WriteSymbols writes the WSPR message with parity bits and interleaving as symbols (values 0..3).
+func (m Message) WriteSymbols(destinationBits []byte) (int, error) {
+	n, err := m.WriteParitySymbols(destinationBits)
 	if err != nil {
 		return 0, err
 	}
@@ -93,8 +93,8 @@ var sync = [...]byte{
 }
 
 // WriteParity writes the parity bits into destination slice. Each byte represents
-// an ordered bit of the WSPR message.
-func (m Message) WriteParityBits(destinationBits []byte) (int, error) {
+// an ordered bit of the WSPR message. The data written are symbols (values 0..3).
+func (m Message) WriteParitySymbols(destinationBits []byte) (int, error) {
 	if len(destinationBits) < 162 {
 		return 0, errors.New("data slice too small for parity output")
 	}

@@ -110,7 +110,7 @@ func TestEncode(t *testing.T) {
 				t.Fatalf("NewMessage error = %v, wantErr %v", err, test.wantErr)
 			}
 			got := make([]byte, 162)
-			n, err := msg.WriteBits(got)
+			n, err := msg.WriteSymbols(got)
 			if (err != nil) != test.wantErr {
 				t.Fatalf("Encode() error = %v, wantErr %v", err, test.wantErr)
 			} else if n != 162 {
@@ -198,7 +198,7 @@ func TestParity(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			got := make([]byte, 162)
-			_, err := test.in.WriteParityBits(got)
+			_, err := test.in.WriteParitySymbols(got)
 			if err != nil {
 				t.Fatalf("Parity() error = %v", err)
 			}

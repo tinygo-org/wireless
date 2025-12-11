@@ -105,11 +105,16 @@ func TestEncode(t *testing.T) {
 				t.Fatalf("broken test: %e", err)
 			}
 
-			msg := NewMessage(s[0], s[1], int(power))
+			msg, err := NewMessage(s[0], s[1], int(power))
+			if err != nil {
+				t.Fatalf("NewMessage error = %v, wantErr %v", err, test.wantErr)
+			}
 			got := make([]byte, 162)
-			_, err = msg.Write(got)
+			n, err := msg.WriteSymbols(got)
 			if (err != nil) != test.wantErr {
 				t.Fatalf("Encode() error = %v, wantErr %v", err, test.wantErr)
+			} else if n != 162 {
+				t.Fatalf("expected 162 bytes written, got %d", n)
 			}
 
 			if got != nil && slices.Compare(got, test.expected) != 0 {
@@ -124,7 +129,7 @@ func TestEncode(t *testing.T) {
 func TestParity(t *testing.T) {
 	for _, test := range []struct {
 		name        string
-		in          uint64
+		in          Message
 		parity      []byte
 		interleaved []byte
 	}{
@@ -193,7 +198,7 @@ func TestParity(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			got := make([]byte, 162)
-			_, err := Parity(test.in, got)
+			_, err := test.in.WriteParitySymbols(got)
 			if err != nil {
 				t.Fatalf("Parity() error = %v", err)
 			}
@@ -281,11 +286,11 @@ func TestSourceEncoding(t *testing.T) {
 			if err != nil {
 				t.Fatalf("broken test: %e", err)
 			}
-			got, err := PackBits(s[0], s[1], int(power))
+			got, err := NewMessage(s[0], s[1], int(power))
 			if (err != nil) != test.wantErr {
 				t.Errorf("PackBits() error = %v, wantErr %v", err, test.wantErr)
 			}
-			if got != test.expected {
+			if got != Message(test.expected) {
 				t.Errorf("PackBits() got = %v, want %v", got, test.expected)
 			}
 		})

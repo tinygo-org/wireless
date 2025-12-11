@@ -21,9 +21,14 @@ func main() {
 	frequency := radio.GetBaseFrequency()
 	println("Transmitting on frequency", frequency, "Hz")
 
+	data := make([]byte, 162)
+
 	// Example WSPR packet data
 	// K1ABC FN42 37
-	msg, err := wspr.WsprMessage("K1ABC", "FN42", 37)
+	// See https://en.wikipedia.org/wiki/WSPR_(amateur_radio_software)
+	msg := wspr.NewMessage("K1ABC", "FN42", 37)
+	_, err := msg.Write(data)
+
 	if err != nil {
 		println("Error creating WSPR message:", err.Error())
 		return
@@ -31,8 +36,8 @@ func main() {
 
 	// transmit some data
 	for range 5 {
-		println("Transmitting WSPR message with", len(msg), "symbols")
-		radio.WriteSymbols(msg)
+		println("Transmitting WSPR message with", len(data), "symbols")
+		radio.WriteSymbols(data)
 
 		time.Sleep(3 * time.Second)
 	}

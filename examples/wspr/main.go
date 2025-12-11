@@ -26,13 +26,17 @@ func main() {
 	// Example WSPR packet data
 	// K1ABC FN42 37
 	// See https://en.wikipedia.org/wiki/WSPR_(amateur_radio_software)
-	msg := wspr.NewMessage("K1ABC", "FN42", 37)
-	_, err := msg.Write(data)
-
+	msg, err := wspr.NewMessage("K1ABC", "FN42", 37)
 	if err != nil {
 		println("Error creating WSPR message:", err.Error())
 		return
 	}
+	n, err := msg.WriteSymbols(data)
+	if err != nil {
+		println("error writing WSPR message")
+		return
+	}
+	data = data[:n]
 
 	// transmit some data
 	for range 5 {

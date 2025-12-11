@@ -14,57 +14,56 @@
  * limitations under the License.
  */
 
-/*
-This file contains code that implements the WSPR protocol
-*/
-
+/* package wspr contains code that implements the WSPR protocol
+ */
 package wspr
 
 import (
 	"errors"
 )
 
-type Message struct {
-	callsign string
-	location string
-	power    int
-}
+// Message is the raw bit form or "packed form" of an entire WSPR message excluding parity bits.
+// A WSPR message is composed of 55 bits user bits,
+// not including parity bits which make it 162 bits in length.
+type Message uint64
 
-func NewMessage(callsign, location string, power int) *Message {
-	return &Message{
-		callsign: callsign,
-		location: location,
-		power:    power,
-	}
-}
-
-func (m *Message) Write(data []byte) (int, error) {
-	bits, err := PackBits(m.callsign, m.location, m.power)
+// NewMessage encodes a WSPR message as bits packed from the compressed form of
+// the callsign, location and power. These resulting bits are in bits number 55...6
+// which is the WSPR convention.
+// An error is returned if there is an error encoding anything.
+func NewMessage(callsign, location string, power int) (Message, error) {
+	c, err := CallSign(callsign)
 	if err != nil {
 		return 0, err
 	}
-
-	if _, err := Parity(bits, data); err != nil {
+	l, err := Locator(location)
+	if err != nil {
 		return 0, err
 	}
-
-	interleave(data)
-	for i := 0; i < len(data); i++ {
-		data[i] = 2*data[i] + sync[i]
-	}
-
-	return len(data), nil
+	return Message((c << 28) + (l << 13) + (Power(power) << 6)), nil
 }
 
-/*
-interleave copies the values in the message by bit-reversing the index of the
-source to get a destination position. Destination positions that are outside the
-destination vector are ignored and the next one is used. That makes this
-operation somewhat different from the normal mathematical definition where
-elements with invalid destinations are simply left in place. That change also
-makes this rearrangement frustratingly non-involutional, so it can't be done in
-place.
-*/
+// WriteSymbols writes the WSPR message with parity bits and interleaving as symbols (values 0..3).
+func (m Message) WriteSymbols(destinationBits []byte) (int, error) {
+	n, err := m.WriteParitySymbols(destinationBits)
+	if err != nil {
+		return 0, err
+	}
+	destinationBits = destinationBits[:n] // Ensure no OOB memory usage.
+	interleave(destinationBits)
+	for i := 0; i < n; i++ {
+		destinationBits[i] = 2*destinationBits[i] + sync[i]
+	}
+	return n, nil
+}
+
+// interleave copies the values in the message by bit-reversing the index of the
+// source to get a destination position. Destination positions that are outside the
+// destination vector are ignored and the next one is used. That makes this
+// operation somewhat different from the normal mathematical definition where
+// elements with invalid destinations are simply left in place. That change also
+// makes this rearrangement frustratingly non-involutional, so it can't be done in
+// place.
 func interleave(message []byte) {
 	n := len(message)
 	dest := make([]byte, len(message))
@@ -82,7 +81,7 @@ func interleave(message []byte) {
 	copy(message, dest)
 }
 
-var sync = []byte{
+var sync = [...]byte{
 	1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0,
 	0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1,
 	0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
@@ -93,27 +92,10 @@ var sync = []byte{
 	0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0,
 }
 
-/*
-PackBits encodes a WSPR message as bits packed from the compressed form of
-the callsign, location and power. These resulting bits are in bits number 55...6
-which is the WSPR convention.
-
-An error is returned if there is an error encoding anything.
-*/
-func PackBits(callsign, location string, power int) (uint64, error) {
-	c, err := CallSign(callsign)
-	if err != nil {
-		return 0, err
-	}
-	l, err := Locator(location)
-	if err != nil {
-		return 0, err
-	}
-	return (c << 28) + (l << 13) + (Power(power) << 6), nil
-}
-
-func Parity(message uint64, data []byte) (int, error) {
-	if len(data) < 162 {
+// WriteParity writes the parity bits into destination slice. Each byte represents
+// an ordered bit of the WSPR message. The data written are symbols (values 0..3).
+func (m Message) WriteParitySymbols(destinationBits []byte) (int, error) {
+	if len(destinationBits) < 162 {
 		return 0, errors.New("data slice too small for parity output")
 	}
 	// these hold the 162 bits of output, one bit per byte
@@ -122,23 +104,23 @@ func Parity(message uint64, data []byte) (int, error) {
 	s1 := uint32(0)
 	s2 := uint32(0)
 	for i := 55; i >= 6; i-- {
-		bit := (message >> i) & 1
+		bit := (m >> i) & 1
 		s1 = (s1 << 1) | uint32(bit)
-		data[k] = byte(parity32(s1 & 0xF2D05351))
+		destinationBits[k] = byte(parity32(s1 & 0xF2D05351))
 		k++
 
 		s2 = (s2 << 1) | uint32(bit)
-		data[k] = byte(parity32(s1 & 0xE4613C47))
+		destinationBits[k] = byte(parity32(s1 & 0xE4613C47))
 		k++
 	}
 	// these bottom bits are all zeros
 	for range 31 {
 		s1 = s1 << 1
-		data[k] = byte(parity32(s1 & 0xF2D05351))
+		destinationBits[k] = byte(parity32(s1 & 0xF2D05351))
 		k++
 
 		s2 = s2 << 1
-		data[k] = byte(parity32(s1 & 0xE4613C47))
+		destinationBits[k] = byte(parity32(s1 & 0xE4613C47))
 		k++
 	}
 	return k, nil
@@ -160,11 +142,9 @@ func parity32(input uint32) int {
 	return int(input & 1)
 }
 
-/*
-CallSign converts a 5 or 6 character call sign to a uint64 using the very
-idiosyncratic WSPR encoding. The call sign must match the regex
-`[A-Z0-9]?[A-Z0-9][0-9][A-Z ][A-Z ][A-Z ]`.
-*/
+// CallSign converts a 5 or 6 character call sign to a uint64 using the very
+// idiosyncratic WSPR encoding. The call sign must match the regex
+// `[A-Z0-9]?[A-Z0-9][0-9][A-Z ][A-Z ][A-Z ]`.
 func CallSign(callsign string) (uint64, error) {
 	var err error
 	var encoded uint64
@@ -215,10 +195,8 @@ func CallSign(callsign string) (uint64, error) {
 	return encoded, err
 }
 
-/*
-Locator converts a four character Maidenhead location reference into a uin64
-using an interleaved encoding
-*/
+// Locator converts a four character Maidenhead location reference into a uin64
+// using an interleaved encoding
 func Locator(locator string) (uint64, error) {
 	if len(locator) != 4 {
 		return 0, errors.New("locator has wrong length")
@@ -243,9 +221,7 @@ func Locator(locator string) (uint64, error) {
 	return encoded, nil
 }
 
-/*
-Power encodes a power measured in dBm to the required bits
-*/
+// Power encodes a power measured in dBm to the required bits
 func Power(dBm int) uint64 {
 	return uint64(0x40 + dBm)
 }

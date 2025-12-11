@@ -211,7 +211,7 @@ func TestWriteSymbols(t *testing.T) {
 	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
 	fsk.Configure()
 
-	symbols := []int8{0, 1, 2, 3, 3, 2, 1, 0}
+	symbols := []byte{0, 1, 2, 3, 3, 2, 1, 0}
 	err := fsk.WriteSymbols(symbols)
 	if err != nil {
 		t.Errorf("WriteSymbols() error = %v", err)
@@ -242,7 +242,7 @@ func TestWriteSymbolsMasksToValidRange(t *testing.T) {
 	fsk.Configure()
 
 	// Test that symbols are masked to 0-3 range
-	symbols := []int8{4, 5, 6, 7, -1, -2}
+	symbols := []byte{4, 5, 6, 7, 255, 254}
 	err := fsk.WriteSymbols(symbols)
 	if err != nil {
 		t.Errorf("WriteSymbols() error = %v", err)
@@ -264,7 +264,7 @@ func TestWriteSymbolsEmpty(t *testing.T) {
 	fsk := NewFSK4(radio, 433000000, 270, 1000000)
 	fsk.Configure()
 
-	symbols := []int8{}
+	symbols := []byte{}
 	err := fsk.WriteSymbols(symbols)
 	if err != nil {
 		t.Errorf("WriteSymbols() error = %v", err)

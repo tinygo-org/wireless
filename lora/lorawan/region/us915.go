@@ -1,6 +1,6 @@
 package region
 
-import "tinygo.org/x/drivers/lora"
+import "tinygo.org/x/wireless/lora"
 
 const (
 	US915_DEFAULT_PREAMBLE_LEN     = 8

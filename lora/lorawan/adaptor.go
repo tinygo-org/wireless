@@ -3,8 +3,8 @@ package lorawan
 import (
 	"errors"
 
-	"tinygo.org/x/drivers/lora"
-	"tinygo.org/x/drivers/lora/lorawan/region"
+	"tinygo.org/x/wireless/lora"
+	"tinygo.org/x/wireless/lora/lorawan/region"
 )
 
 var (

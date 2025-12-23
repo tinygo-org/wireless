@@ -73,6 +73,18 @@ Frequency-shift keying (FSK4)
 
 https://en.wikipedia.org/wiki/Frequency-shift_keying
 
+### LoRa
+
+Long Range (LoRa)
+
+https://en.wikipedia.org/wiki/LoRa
+
+### LoRaWAN
+
+Long Range Wide Area Networking (LoRaWAN)
+
+https://en.wikipedia.org/wiki/LoRa#LoRaWAN
+
 ### WSPR
 
 Weak Signal Propagation Reporter (WSPR)

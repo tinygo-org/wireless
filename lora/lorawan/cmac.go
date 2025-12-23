@@ -5,7 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"hash"
-	"unsafe"
 )
 
 type cmacHash struct {
@@ -143,38 +142,13 @@ func (h *cmacHash) writeBlocks(p []byte) {
 	for off := 0; off < len(p); off += blockSize {
 		block := p[off : off+blockSize]
 
-		xorBlock(
-			unsafe.Pointer(&y[0]),
-			unsafe.Pointer(&h.x[0]),
-			unsafe.Pointer(&block[0]))
+		// XOR block directly without unsafe pointer arithmetic
+		for i := 0; i < blockSize; i++ {
+			y[i] = h.x[i] ^ block[i]
+		}
 
 		h.ciph.Encrypt(h.x, y)
 	}
-
-	return
-}
-
-func xorBlock(
-	dstPtr unsafe.Pointer,
-	aPtr unsafe.Pointer,
-	bPtr unsafe.Pointer) {
-	// Check assumptions. (These are compile-time constants, so this should
-	// compile out.)
-	const wordSize = unsafe.Sizeof(uintptr(0))
-	if blockSize != 4*wordSize {
-		panic("xorBlock err1")
-	}
-
-	// Convert.
-	a := (*[4]uintptr)(aPtr)
-	b := (*[4]uintptr)(bPtr)
-	dst := (*[4]uintptr)(dstPtr)
-
-	// Compute.
-	dst[0] = a[0] ^ b[0]
-	dst[1] = a[1] ^ b[1]
-	dst[2] = a[2] ^ b[2]
-	dst[3] = a[3] ^ b[3]
 }
 
 func PadBlock(block []byte) []byte {

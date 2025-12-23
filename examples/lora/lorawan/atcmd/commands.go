@@ -1,11 +1,13 @@
+//go:build tinygo
+
 package main
 
 import (
 	"encoding/hex"
 	"strings"
 
-	"tinygo.org/x/drivers/examples/lora/lorawan/common"
-	"tinygo.org/x/drivers/lora/lorawan"
+	"tinygo.org/x/wireless/examples/lora/lorawan/common"
+	"tinygo.org/x/wireless/lora/lorawan"
 )
 
 // Use to test if connection to module is OK.

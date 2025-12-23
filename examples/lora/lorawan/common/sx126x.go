@@ -5,8 +5,8 @@ package common
 import (
 	"machine"
 
-	"tinygo.org/x/drivers/lora"
 	"tinygo.org/x/drivers/sx126x"
+	"tinygo.org/x/wireless/lora"
 )
 
 const (

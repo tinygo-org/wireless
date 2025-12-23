@@ -2,7 +2,7 @@
 
 package common
 
-import "tinygo.org/x/drivers/lora"
+import "tinygo.org/x/wireless/lora"
 
 // do simulator setup here
 func SetupLora() (lora.Radio, error) {

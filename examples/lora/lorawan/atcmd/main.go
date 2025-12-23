@@ -1,3 +1,5 @@
+//go:build tinygo
+
 // AT command set console running on the device UART to communicate with
 // an attached LoRa device.
 //
@@ -12,10 +14,10 @@ import (
 	"machine"
 	"time"
 
-	"tinygo.org/x/drivers/examples/lora/lorawan/common"
-	"tinygo.org/x/drivers/lora"
-	"tinygo.org/x/drivers/lora/lorawan"
-	"tinygo.org/x/drivers/lora/lorawan/region"
+	"tinygo.org/x/wireless/examples/lora/lorawan/common"
+	"tinygo.org/x/wireless/lora"
+	"tinygo.org/x/wireless/lora/lorawan"
+	"tinygo.org/x/wireless/lora/lorawan/region"
 )
 
 // change these to test a different UART or pins if available

@@ -36,11 +36,11 @@ func main() {
 	println("Transmitting on frequency", frequency, "Hz")
 
 	// transmit some data
-	for range 5 {
+	for range 50 {
 		println("Transmitting data:", hex.EncodeToString(horusPacket))
 		radio.Write(horusPacket)
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(30 * time.Second)
 	}
 
 	time.Sleep(2 * time.Second)

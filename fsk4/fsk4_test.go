@@ -132,7 +132,7 @@ func TestStandby(t *testing.T) {
 
 func TestWriteByte(t *testing.T) {
 	radio := NewMockRadio(61.0)
-	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
+	fsk := NewFSK4(radio, 433000000, 270, 100) // High rate for fast test
 	fsk.Configure()
 
 	// Write a byte and check that 4 symbols were transmitted
@@ -148,7 +148,7 @@ func TestWriteByte(t *testing.T) {
 
 func TestWrite(t *testing.T) {
 	radio := NewMockRadio(61.0)
-	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
+	fsk := NewFSK4(radio, 433000000, 270, 100) // High rate for fast test
 	fsk.Configure()
 
 	data := []byte{0xAB, 0xCD}
@@ -186,18 +186,18 @@ func TestSymbolExtraction(t *testing.T) {
 
 	for _, tt := range tests {
 		radio := NewMockRadio(1.0) // Step of 1 for easy calculation
-		fsk := NewFSK4(radio, 1000, 1, 1000000)
+		fsk := NewFSK4(radio, 1000, 1, 100)
 		fsk.Configure()
 
 		fsk.writeByte(tt.input)
 
 		for i, expectedSymbol := range tt.symbols {
 			// With base freq 1000 and tones [0, 1, 2, 3],
-			// transmitted freq should be 1000 + symbol
-			expectedFreq := uint32(1000 + uint32(expectedSymbol)*fsk.tones[1]/1)
+			// transmitted freq should be 1000*100 + symbol
+			expectedFreq := uint32(1000*100 + uint32(expectedSymbol)*fsk.tones[1]/1)
 			if i < len(radio.frequencies) {
 				// Verify the correct symbol was selected by checking relative frequencies
-				if radio.frequencies[i] != uint64(1000)+uint64(fsk.tones[expectedSymbol]) {
+				if radio.frequencies[i] != uint64(1000*100)+uint64(fsk.tones[expectedSymbol]) {
 					t.Errorf("byte 0x%02X symbol %d: got freq %d, want %d",
 						tt.input, i, radio.frequencies[i], expectedFreq)
 				}
@@ -208,7 +208,7 @@ func TestSymbolExtraction(t *testing.T) {
 
 func TestWriteSymbols(t *testing.T) {
 	radio := NewMockRadio(61)
-	fsk := NewFSK4(radio, 433000000, 270, 1000000) // High rate for fast test
+	fsk := NewFSK4(radio, 433000000, 270, 100) // High rate for fast test
 	fsk.Configure()
 
 	symbols := []byte{0, 1, 2, 3, 3, 2, 1, 0}
@@ -224,7 +224,7 @@ func TestWriteSymbols(t *testing.T) {
 
 	// Verify frequencies correspond to symbols
 	for i, symbol := range symbols {
-		expectedFreq := uint64(433000000) + uint64(fsk.tones[symbol])
+		expectedFreq := uint64(433000000)*100 + uint64(fsk.tones[symbol])
 		if radio.frequencies[i] != expectedFreq {
 			t.Errorf("frequencies[%d] = %d, want %d", i, radio.frequencies[i], expectedFreq)
 		}
@@ -238,7 +238,7 @@ func TestWriteSymbols(t *testing.T) {
 
 func TestWriteSymbolsMasksToValidRange(t *testing.T) {
 	radio := NewMockRadio(61)
-	fsk := NewFSK4(radio, 433000000, 270, 1000000)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
 	fsk.Configure()
 
 	// Test that symbols are masked to 0-3 range
@@ -252,7 +252,7 @@ func TestWriteSymbolsMasksToValidRange(t *testing.T) {
 	// -1 & 0x03 = 3, -2 & 0x03 = 2
 	expectedSymbols := []byte{0, 1, 2, 3, 3, 2}
 	for i, expected := range expectedSymbols {
-		expectedFreq := uint64(433000000) + uint64(fsk.tones[expected])
+		expectedFreq := uint64(433000000)*100 + uint64(fsk.tones[expected])
 		if radio.frequencies[i] != expectedFreq {
 			t.Errorf("frequencies[%d] = %d, want %d (symbol %d)", i, radio.frequencies[i], expectedFreq, expected)
 		}
@@ -261,7 +261,7 @@ func TestWriteSymbolsMasksToValidRange(t *testing.T) {
 
 func TestWriteSymbolsEmpty(t *testing.T) {
 	radio := NewMockRadio(61)
-	fsk := NewFSK4(radio, 433000000, 270, 1000000)
+	fsk := NewFSK4(radio, 433000000, 270, 100)
 	fsk.Configure()
 
 	symbols := []byte{}

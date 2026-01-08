@@ -36,14 +36,17 @@ func main() {
 		println("error writing WSPR message")
 		return
 	}
-	data = data[:n]
 
 	// transmit some data
-	for range 5 {
-		println("Transmitting WSPR message with", len(data), "symbols")
-		radio.WriteSymbols(data)
+	for range 50 {
+		println("Transmitting WSPR message with", n, "symbols")
+		if err := radio.WriteSymbols(data[:n]); err != nil {
+			println("error transmitting WSPR message:", err.Error())
+			return
+		}
 
-		time.Sleep(3 * time.Second)
+		println("Waiting for next transmission...")
+		time.Sleep(15 * time.Second)
 	}
 
 	time.Sleep(2 * time.Second)

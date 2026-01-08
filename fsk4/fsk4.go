@@ -14,6 +14,10 @@ type FSK4 struct {
 }
 
 // NewFSK4 creates a new FSK4 modem instance.
+// radio: the Radio interface implementation
+// base: the base frequency in Hz
+// shift: the frequency shift in Hz*100 eg. 270 = 2.7 Hz
+// rate: the send rate in milliseconds per symbol
 func NewFSK4(radio Radio, base uint64, shift, rate uint32) *FSK4 {
 	return &FSK4{
 		radio: radio,
@@ -80,8 +84,11 @@ func (r *FSK4) Standby() error {
 // This is useful for protocols like WSPR that provide pre-encoded symbols.
 func (r *FSK4) WriteSymbols(symbols []byte) error {
 	for _, symbol := range symbols {
-		r.tone(symbol & 0x03)
+		if err := r.tone(symbol & 0x03); err != nil {
+			return err
+		}
 	}
+
 	return r.Standby()
 }
 
@@ -106,7 +113,9 @@ func (r *FSK4) writeByte(data byte) error {
 		symbol := (data & 0xC0) >> 6
 
 		// Modulate
-		r.tone(symbol)
+		if err := r.tone(symbol); err != nil {
+			return err
+		}
 
 		// Shift to next symbol
 		data = data << 2
@@ -115,9 +124,13 @@ func (r *FSK4) writeByte(data byte) error {
 	return nil
 }
 
-func (r *FSK4) tone(symbol byte) {
-	freq := r.base + uint64(r.tones[symbol])
-	r.radio.Transmit(freq)
+func (r *FSK4) tone(symbol byte) error {
+	freq := r.base * 100 + uint64(r.tones[symbol])
+	if err := r.radio.Transmit(freq); err != nil {
+		return err
+	}
 	// hold for one symbol period
-	time.Sleep(time.Duration(1000000/r.rate) * time.Microsecond)
+    time.Sleep(time.Duration(r.rate) * time.Millisecond)
+
+	return nil
 }

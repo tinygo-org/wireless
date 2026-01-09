@@ -21,8 +21,8 @@ import "testing"
 func TestMaidenhead(t *testing.T) {
 	tests := []struct {
 		name string
-		lat  float64
-		long float64
+		lat  float32
+		long float32
 		loc  string
 	}{
 		{"W1AW", 41.7148, -72.7272, "FN31PR"},

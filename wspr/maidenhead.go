@@ -17,7 +17,7 @@
 package wspr
 
 import (
-	"math"
+	"github.com/chewxy/math32"
 )
 
 /*
@@ -25,7 +25,7 @@ This file contains support for forward and reverse encoding of lat-long pairs
 into the Maidenhead representation.
 */
 
-func Maidenhead(lat, long float64) string {
+func Maidenhead(lat, long float32) string {
 	lat += 90
 
 	long += 180
@@ -41,18 +41,18 @@ func Maidenhead(lat, long float64) string {
 	code[0] = 'A' + byte(int(long/20))
 	code[1] = 'A' + byte(int(lat/10))
 
-	long = math.Mod(long, 20)
-	lat = math.Mod(lat, 10)
+	long = math32.Mod(long, 20)
+	lat = math32.Mod(lat, 10)
 	code[2] = '0' + byte(int(long/2))
 	code[3] = '0' + byte(int(lat))
 
-	long = math.Mod(long, 2) * 24
-	lat = math.Mod(lat, 1) * 24
+	long = math32.Mod(long, 2) * 24
+	lat = math32.Mod(lat, 1) * 24
 	code[4] = 'A' + byte(int(long/2))
 	code[5] = 'A' + byte(int(lat))
 
-	long = math.Mod(long, 2) * 10
-	lat = math.Mod(lat, 1) * 10
+	long = math32.Mod(long, 2) * 10
+	lat = math32.Mod(lat, 1) * 10
 	code[6] = '0' + byte(int(long/2))
 	code[7] = '0' + byte(int(lat))
 

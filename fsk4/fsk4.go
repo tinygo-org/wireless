@@ -1,7 +1,12 @@
 package fsk4
 
 import (
+	"errors"
 	"time"
+)
+
+var (
+	baudRateTooHighError = errors.New("Baud rate too high, cannot keep up with transmission")
 )
 
 // FSK4 represents an FSK4 modem.
@@ -9,7 +14,7 @@ type FSK4 struct {
 	radio Radio
 	base  uint64
 	shift uint32
-	rate  uint32
+	rate  time.Duration
 	tones [4]uint32
 }
 
@@ -17,8 +22,8 @@ type FSK4 struct {
 // radio: the Radio interface implementation
 // base: the base frequency in Hz
 // shift: the frequency shift in Hz*100 eg. 270 = 2.7 Hz
-// rate: the send rate in milliseconds per symbol
-func NewFSK4(radio Radio, base uint64, shift, rate uint32) *FSK4 {
+// rate: the send rate
+func NewFSK4(radio Radio, base uint64, shift uint32, rate time.Duration) *FSK4 {
 	return &FSK4{
 		radio: radio,
 		base:  base,
@@ -55,8 +60,8 @@ func (r *FSK4) GetBaseFrequency() uint64 {
 	return r.base
 }
 
-// GetRate returns the current sample rate.
-func (r *FSK4) GetRate() uint32 {
+// GetRate returns the current transfer rate.
+func (r *FSK4) GetRate() time.Duration {
 	return r.rate
 }
 
@@ -65,8 +70,8 @@ func (r *FSK4) SetBaseFrequency(freq uint64) {
 	r.base = freq
 }
 
-// SetSampleRate sets the sample rate.
-func (r *FSK4) SetSampleRate(rate uint32) {
+// SetSampleRate sets the transfer rate.
+func (r *FSK4) SetRate(rate time.Duration) {
 	r.rate = rate
 }
 
@@ -125,12 +130,19 @@ func (r *FSK4) writeByte(data byte) error {
 }
 
 func (r *FSK4) tone(symbol byte) error {
-	freq := r.base * 100 + uint64(r.tones[symbol])
+	start := time.Now()
+	freq := r.base*100 + uint64(r.tones[symbol])
 	if err := r.radio.Transmit(freq); err != nil {
 		return err
 	}
+
+	// added delay to account for transmitter startup time
+	transmitStartupTime := time.Since(start)
+	if transmitStartupTime > r.rate {
+		return baudRateTooHighError
+	}
 	// hold for one symbol period
-    time.Sleep(time.Duration(r.rate) * time.Millisecond)
+	time.Sleep(r.rate - transmitStartupTime)
 
 	return nil
 }

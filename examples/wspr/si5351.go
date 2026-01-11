@@ -4,6 +4,7 @@ package main
 
 import (
 	"machine"
+	"time"
 
 	"tinygo.org/x/drivers/si5351"
 	"tinygo.org/x/wireless/fsk4"
@@ -18,7 +19,7 @@ func initRadio() *fsk4.FSK4 {
 		panic(err)
 	}
 
-	f := fsk4.NewFSK4(&Si5351Radio{device: dev}, 14_097_060, 146, 682)
+	f := fsk4.NewFSK4(&Si5351Radio{device: dev}, 14_097_060, 146, 682*time.Millisecond)
 	f.Configure()
 
 	return f

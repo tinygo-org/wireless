@@ -2,6 +2,7 @@ package fsk4
 
 import (
 	"testing"
+	"time"
 )
 
 // MockRadio implements the Radio interface for testing
@@ -91,10 +92,10 @@ func TestGettersAndSetters(t *testing.T) {
 		t.Errorf("GetRate() = %d, want 100", fsk.GetRate())
 	}
 
-	// Test SetSampleRate
-	fsk.SetSampleRate(200)
-	if fsk.GetRate() != 200 {
-		t.Errorf("after SetSampleRate(), GetRate() = %d, want 200", fsk.GetRate())
+	// Test SetRate
+	fsk.SetRate(200 * time.Millisecond)
+	if fsk.GetRate() != 200*time.Millisecond {
+		t.Errorf("after SetRate(), GetRate() = %d, want 200", fsk.GetRate())
 	}
 
 	// Test SetShift
@@ -119,7 +120,7 @@ func TestClose(t *testing.T) {
 
 func TestStandby(t *testing.T) {
 	radio := NewMockRadio(61.0)
-	fsk := NewFSK4(radio, 433000000, 270, 100)
+	fsk := NewFSK4(radio, 433000000, 270, 100*time.Millisecond)
 
 	err := fsk.Standby()
 	if err != nil {
@@ -132,7 +133,7 @@ func TestStandby(t *testing.T) {
 
 func TestWriteByte(t *testing.T) {
 	radio := NewMockRadio(61.0)
-	fsk := NewFSK4(radio, 433000000, 270, 100) // High rate for fast test
+	fsk := NewFSK4(radio, 433000000, 270, 100*time.Millisecond) // High rate for fast test
 	fsk.Configure()
 
 	// Write a byte and check that 4 symbols were transmitted
@@ -148,7 +149,7 @@ func TestWriteByte(t *testing.T) {
 
 func TestWrite(t *testing.T) {
 	radio := NewMockRadio(61.0)
-	fsk := NewFSK4(radio, 433000000, 270, 100) // High rate for fast test
+	fsk := NewFSK4(radio, 433000000, 270, 100*time.Millisecond) // High rate for fast test
 	fsk.Configure()
 
 	data := []byte{0xAB, 0xCD}
@@ -208,7 +209,7 @@ func TestSymbolExtraction(t *testing.T) {
 
 func TestWriteSymbols(t *testing.T) {
 	radio := NewMockRadio(61)
-	fsk := NewFSK4(radio, 433000000, 270, 100) // High rate for fast test
+	fsk := NewFSK4(radio, 433000000, 270, 100*time.Millisecond) // High rate for fast test
 	fsk.Configure()
 
 	symbols := []byte{0, 1, 2, 3, 3, 2, 1, 0}
@@ -238,7 +239,7 @@ func TestWriteSymbols(t *testing.T) {
 
 func TestWriteSymbolsMasksToValidRange(t *testing.T) {
 	radio := NewMockRadio(61)
-	fsk := NewFSK4(radio, 433000000, 270, 100)
+	fsk := NewFSK4(radio, 433000000, 270, 100*time.Millisecond)
 	fsk.Configure()
 
 	// Test that symbols are masked to 0-3 range
@@ -261,7 +262,7 @@ func TestWriteSymbolsMasksToValidRange(t *testing.T) {
 
 func TestWriteSymbolsEmpty(t *testing.T) {
 	radio := NewMockRadio(61)
-	fsk := NewFSK4(radio, 433000000, 270, 100)
+	fsk := NewFSK4(radio, 433000000, 270, 100*time.Millisecond)
 	fsk.Configure()
 
 	symbols := []byte{}

@@ -2,10 +2,14 @@
 
 package main
 
-import "tinygo.org/x/wireless/fsk4"
+import (
+	"time"
+
+	"tinygo.org/x/wireless/fsk4"
+)
 
 func initRadio() *fsk4.FSK4 {
-	return fsk4.NewFSK4(&NoRadio{}, 144800000, 5000, 1200)
+	return fsk4.NewFSK4(&NoRadio{}, 144800000, 5000, 1200*time.Millisecond)
 }
 
 type NoRadio struct{}

@@ -90,6 +90,12 @@ Long Range Wide Area Networking (LoRaWAN)
 
 https://en.wikipedia.org/wiki/LoRa#LoRaWAN
 
+### U4B
+
+Telemetry protocol on Weak Signal Propagation Reporter (WSPR)
+
+https://qrp-labs.com/u4b/u4bdecoding.html
+
 ### WSPR
 
 Weak Signal Propagation Reporter (WSPR)

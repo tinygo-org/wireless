@@ -21,7 +21,7 @@ func main() {
 	frequency := radio.GetBaseFrequency()
 	println("Transmitting on frequency", frequency, "Hz")
 
-	data := make([]byte, 162)
+	data := make([]byte, 256)
 
 	// Example WSPR packet data
 	// K1ABC FN42 37

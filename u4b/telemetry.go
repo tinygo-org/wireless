@@ -105,7 +105,7 @@ var powerDbmList = [19]uint8{
 
 func encodeTelemetryGridPower(temperature int, voltage int, speed int) (string, int, error) {
 	// convert inputs to encoded numbers
-	tempCNum := uint8(temperature + 50)
+	tempCNum := uint8((temperature - -50) % 90)
 	voltageNum := (uint8(math32.Round((float32(voltage)-300)/5)) + 20) % 40
 	speedKnotsNum := uint8(math32.Round(float32(speed) / 2.0))
 	gpsValidNum := uint8(1)

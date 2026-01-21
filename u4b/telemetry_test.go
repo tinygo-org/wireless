@@ -43,7 +43,20 @@ func TestEncodeTelemetryCallSign(t *testing.T) {
 }
 
 func TestEncodeTelemetryGridPower(t *testing.T) {
-	grid, power, err := encodeTelemetryGridPower(0, 500, 10)
+	grid, power, err := encodeTelemetryGridPower(27, 500, 10)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if len(grid) != 4 {
+		t.Errorf("grid length = %d, want 4", len(grid))
+	}
+	if power < 0 || power > 60 {
+		t.Errorf("power = %d, out of expected range", power)
+	}
+}
+
+func TestEncodeTelemetryGridPower2(t *testing.T) {
+	grid, power, err := encodeTelemetryGridPower(-27, 3700, 10)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -56,7 +69,7 @@ func TestEncodeTelemetryGridPower(t *testing.T) {
 }
 
 func TestNewTelemetryMessage(t *testing.T) {
-	msg, err := NewMessage("AB", "CD", 100, 0, 500, 10)
+	msg, err := NewMessage("AB", "CD", 100, 27, 3700, 10)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -64,11 +77,11 @@ func TestNewTelemetryMessage(t *testing.T) {
 		t.Error("expected non-zero message")
 	}
 
-	_, err = NewMessage("A", "CD", 100, 0, 500, 10)
+	_, err = NewMessage("A", "CD", 100, 27, 500, 10)
 	if err == nil {
 		t.Error("expected error for short channel, got nil")
 	}
-	_, err = NewMessage("AB", "C", 100, 0, 500, 10)
+	_, err = NewMessage("AB", "C", 100, 27, 500, 10)
 	if err == nil {
 		t.Error("expected error for short grid, got nil")
 	}

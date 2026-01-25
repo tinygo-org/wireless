@@ -90,6 +90,12 @@ Long Range Wide Area Networking (LoRaWAN)
 
 https://en.wikipedia.org/wiki/LoRa#LoRaWAN
 
+### Morse
+
+Morse code
+
+https://en.wikipedia.org/wiki/Morse_code#Amateur_radio
+
 ### U4B
 
 Telemetry protocol on Weak Signal Propagation Reporter (WSPR)

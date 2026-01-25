@@ -1,7 +1,8 @@
-// AFSK modem example using Si5351 as the frequency generator.
+// AFSK modem example
 //
 // tinygo flash -size short -tags=si5351 -target=pico -monitor ./examples/afsk
 // tinygo flash -size short -tags=featherwing -target=pybadge -monitor ./examples/afsk
+// go run ./examples/afsk
 package main
 
 import (
@@ -16,19 +17,23 @@ func main() {
 	println("AFSK modem initialized.")
 	radio := initRadio()
 
-	// set tone frequency 1
-	frequency := 1200 // Example frequency in Hz
-	println("Setting tone frequency to", frequency, "Hz")
-	radio.Tone(uint64(frequency))
+	for i := 0; i < 3; i++ {
+		// set tone frequency 1
+		frequency := 1200 // Example frequency in Hz
+		println("Setting tone frequency to", frequency, "Hz")
+		radio.Tone(uint64(frequency))
 
-	time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
+		radio.Standby()
 
-	// set tone frequency 2
-	frequency2 := 2200 // Example frequency in Hz
-	println("Setting tone frequency to", frequency2, "Hz")
-	radio.Tone(uint64(frequency2))
+		// set tone frequency 2
+		frequency2 := 2200 // Example frequency in Hz
+		println("Setting tone frequency to", frequency2, "Hz")
+		radio.Tone(uint64(frequency2))
 
-	time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
+		radio.Standby()
+	}
 
 	// put the radio in standby
 	println("Putting radio in standby mode...")

@@ -32,6 +32,12 @@ Bell 103 modem
 
 https://en.wikipedia.org/wiki/Bell_103
 
+### Horus Binary (v1/v2/v3)
+
+Modulation format developed by Project Horus as an open-source and highly-robust alternative to RTTY and LoRa.
+
+https://github.com/projecthorus
+
 ### Morse
 
 Morse code
@@ -56,6 +62,3 @@ SSDV (Slow Scan Digital Video)
 
 https://ukhas.org.uk/doku.php?id=guides%3Assdv
 
-## Migrate `lora` and `lorawan` from TinyGo drivers
-
-Move the `lora` and `lorawan` from the TinyGo drivers package over here, where it will have friends.

@@ -16,7 +16,10 @@ func initRadio() *afsk.AFSK {
 		panic(err)
 	}
 
-	return afsk.NewAFSK(&Si5351Radio{device: dev})
+	a := afsk.NewAFSK(&Si5351Radio{device: dev})
+	a.Configure()
+
+	return a
 }
 
 type Si5351Radio struct {

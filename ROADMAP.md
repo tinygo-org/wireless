@@ -38,12 +38,6 @@ Modulation format developed by Project Horus as an open-source and highly-robust
 
 https://github.com/projecthorus
 
-### Morse
-
-Morse code
-
-https://en.wikipedia.org/wiki/Morse_code#Amateur_radio
-
 ### RTTY
 
 Radioteletype (RTTY)

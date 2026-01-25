@@ -60,10 +60,10 @@ func TestTone(t *testing.T) {
 		freq     uint64
 		expected uint64
 	}{
-		{"low frequency", 1200, 1200},
-		{"high frequency", 2200, 2200},
+		{"low frequency", 1200, 120000},
+		{"high frequency", 2200, 220000},
 		{"zero frequency", 0, 0},
-		{"fractional frequency rounds down", 1500, 1500},
+		{"fractional frequency rounds down", 1500, 150000},
 	}
 
 	for _, tt := range tests {
@@ -99,8 +99,8 @@ func TestToneMultipleCalls(t *testing.T) {
 	}
 
 	for i, expected := range frequencies {
-		if radio.frequencies[i] != uint64(expected) {
-			t.Errorf("frequencies[%d] = %d, want %d", i, radio.frequencies[i], uint64(expected))
+		if radio.frequencies[i] != uint64(expected)*100 {
+			t.Errorf("frequencies[%d] = %d, want %d", i, radio.frequencies[i], uint64(expected)*100)
 		}
 	}
 }

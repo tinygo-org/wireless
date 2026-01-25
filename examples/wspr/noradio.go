@@ -5,26 +5,15 @@ package main
 import (
 	"time"
 
+	"tinygo.org/x/wireless/examples/audio"
 	"tinygo.org/x/wireless/fsk4"
 )
 
 func initRadio() *fsk4.FSK4 {
-	return fsk4.NewFSK4(&NoRadio{}, 144800000, 5000, 1200*time.Millisecond)
-}
+	player := audio.NewPlayer()
 
-type NoRadio struct{}
+	fsk := fsk4.NewFSK4(player, 440, 2000, 682*time.Millisecond)
+	fsk.Configure()
 
-func (r *NoRadio) Transmit(freq uint64) error {
-	println("NoRadio Transmit called with freq:", freq)
-	return nil
-}
-
-func (r *NoRadio) Standby() error {
-	println("NoRadio Standby called")
-	return nil
-}
-
-func (r *NoRadio) Close() error {
-	println("NoRadio Close called")
-	return nil
+	return fsk
 }

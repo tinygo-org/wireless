@@ -2,25 +2,15 @@
 
 package main
 
-import "tinygo.org/x/wireless/afsk"
+import (
+	"tinygo.org/x/wireless/afsk"
+	"tinygo.org/x/wireless/examples/audio"
+)
 
 func initRadio() *afsk.AFSK {
-	return afsk.NewAFSK(&NoRadio{})
-}
+	player := audio.NewPlayer()
+	a := afsk.NewAFSK(player)
+	a.Configure()
 
-type NoRadio struct{}
-
-func (r *NoRadio) Transmit(freq uint64) error {
-	println("NoRadio Transmit called with freq:", freq)
-	return nil
-}
-
-func (r *NoRadio) Standby() error {
-	println("NoRadio Standby called")
-	return nil
-}
-
-func (r *NoRadio) Close() error {
-	println("NoRadio Close called")
-	return nil
+	return a
 }

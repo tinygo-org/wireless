@@ -2,6 +2,7 @@
 //
 // tinygo flash -size short -tags=si5351 -target=pico -monitor ./examples/wspr
 // tinygo flash -size short -tags=featherwing -target=pybadge -monitor ./examples/wspr
+// go run ./examples/wspr
 package main
 
 import (

@@ -40,7 +40,10 @@ func initRadio() *afsk.AFSK {
 	println("setting OOK modulation")
 	dev.SetModulationType(sx127x.SX127X_OPMODE_MODULATION_OOK)
 
-	return afsk.NewAFSK(&sx127xRadio{device: dev})
+	a := afsk.NewAFSK(&sx127xRadio{device: dev})
+	a.Configure()
+
+	return a
 }
 
 type sx127xRadio struct {

@@ -22,9 +22,9 @@ func (r *AFSK) Configure() error {
 	return nil
 }
 
-// SetFrequency sets the transmission frequency.
+// Tone sets the transmission frequency in Hz
 func (r *AFSK) Tone(freq uint64) {
-	r.radio.Transmit(freq)
+	r.radio.Transmit(freq * 100)
 }
 
 // Standby puts the radio in standby mode.

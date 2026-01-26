@@ -58,17 +58,17 @@ func TestConfigure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Configure failed: %v", err)
 	}
-	if m.dotLength != 60 {
+	if m.dotLength != 60*time.Millisecond {
 		t.Errorf("dotLength expected 60, got %d", m.dotLength)
 	}
-	if m.dashLength != 180 {
+	if m.dashLength != 180*time.Millisecond {
 		t.Errorf("dashLength expected 180, got %d", m.dashLength)
 	}
-	if m.letterSpace != 180 {
+	if m.letterSpace != 180*time.Millisecond {
 		t.Errorf("letterSpace expected 180, got %d", m.letterSpace)
 	}
-	if m.wordSpace != 240 {
-		t.Errorf("wordSpace expected 240, got %d", m.wordSpace)
+	if m.wordSpace != 420*time.Millisecond {
+		t.Errorf("wordSpace expected 420, got %d", m.wordSpace)
 	}
 }
 
@@ -193,7 +193,7 @@ func TestWriteTiming(t *testing.T) {
 	start := time.Now()
 	_ = m.write('E')
 	elapsed := time.Since(start)
-	if elapsed < time.Duration(m.dotLength)*time.Millisecond {
+	if elapsed < m.dotLength {
 		t.Error("timing too short")
 	}
 }

@@ -16,10 +16,10 @@ type Morse struct {
 	radio       Radio
 	base        uint64
 	speed       int
-	dotLength   int
-	dashLength  int
-	letterSpace int
-	wordSpace   int
+	dotLength   time.Duration
+	dashLength  time.Duration
+	letterSpace time.Duration
+	wordSpace   time.Duration
 }
 
 // NewMorse creates a new Morse modem instance.
@@ -40,10 +40,10 @@ func (m *Morse) Close() error {
 
 func (m *Morse) Configure() error {
 	// calculate symbol lengths (using PARIS as typical word)
-	m.dotLength = 1200 / m.speed
-	m.dashLength = 3 * m.dotLength
-	m.letterSpace = 3 * m.dotLength
-	m.wordSpace = 4 * m.dotLength
+	m.dotLength = time.Duration(1200/m.speed) * time.Millisecond
+	m.dashLength = time.Duration(3) * m.dotLength
+	m.letterSpace = time.Duration(3) * m.dotLength
+	m.wordSpace = time.Duration(7) * m.dotLength
 
 	return nil
 }
@@ -72,24 +72,19 @@ func (m *Morse) Write(data string) (int, error) {
 }
 
 func (m *Morse) write(b byte) error {
-	if (b < ' ') || (b == 0x60) || (b > 'z') {
-		return ErrInvalidCharacter
-	}
-
 	// inter-word pause (space)
 	if b == ' ' {
-		m.radio.Standby()
-		time.Sleep(time.Duration(m.wordSpace) * time.Millisecond)
+		if err := m.radio.Standby(); err != nil {
+			return err
+		}
+
+		time.Sleep(m.wordSpace)
 		return nil
 	}
 
 	// get morse code from lookup table
 	code := ASCIIToMorse(b)
 	if code == 0 {
-		return ErrInvalidCharacter
-	}
-
-	if code == Unsupported {
 		return ErrInvalidCharacter
 	}
 
@@ -100,20 +95,20 @@ func (m *Morse) write(b byte) error {
 			if err := m.radio.Transmit(m.base * 100); err != nil {
 				return err
 			}
-			time.Sleep(time.Duration(m.dashLength) * time.Millisecond)
+			time.Sleep(m.dashLength)
 		} else {
 			// dot
 			if err := m.radio.Transmit(m.base * 100); err != nil {
 				return err
 			}
-			time.Sleep(time.Duration(m.dotLength) * time.Millisecond)
+			time.Sleep(m.dotLength)
 		}
 
 		// inter-symbol pause
 		if err := m.radio.Standby(); err != nil {
 			return err
 		}
-		time.Sleep(time.Duration(m.dotLength) * time.Millisecond)
+		time.Sleep(m.dotLength)
 
 		code >>= 1
 	}
@@ -122,7 +117,7 @@ func (m *Morse) write(b byte) error {
 	if err := m.radio.Standby(); err != nil {
 		return err
 	}
-	time.Sleep(time.Duration(m.letterSpace-m.dotLength) * time.Millisecond)
+	time.Sleep(m.letterSpace - m.dotLength)
 
 	return nil
 }

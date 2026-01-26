@@ -40,7 +40,7 @@ func initRadio() *morse.Morse {
 	println("setting OOK modulation")
 	dev.SetModulationType(sx127x.SX127X_OPMODE_MODULATION_OOK)
 
-	m := morse.NewMorse(&sx127xRadio{device: dev}, 11_400, 20)
+	m := morse.NewMorse(&sx127xRadio{device: dev}, 540_000, 20)
 	m.Configure()
 
 	return m

@@ -1,10 +1,8 @@
 package morse
 
 const (
-	Dot           = 0b0
-	Dash          = 0b1
-	Unsupported   = 0xFF
-	UnknownSymbol = '*'
+	Dot  = 0b0
+	Dash = 0b1
 )
 
 // ASCIIToMorse converts an ASCII byte to its Morse code representation.
@@ -21,21 +19,14 @@ const (
 )
 
 // codes contain the Morse character table as per ITU-R M.1677-1.
-// The Morse code representation is saved LSB first, using an additional bit as a guard bit.
-// The position in the array corresponds to ASCII code minus AsciiOffset.
-// ASCII characters marked Unsupported do not have ITU-R M.1677-1 equivalent.
+// The Morse code representation is stored as LSB first, using an additional bit as a guard bit.
 var codes = []uint8{
 	' ':  0b00,
-	'!':  0b110101, // unsupported
+	'!':  0b110101, // unsupported?
 	'"':  0b1010010,
-	'#':  Unsupported, // unsupported
-	'$':  Unsupported, // unsupported
-	'%':  Unsupported, // unsupported
-	'&':  Unsupported, // unsupported
 	'\'': 0b1011110,
 	'(':  0b101101,
 	')':  0b1101101,
-	'*':  Unsupported, // unsupported
 	'+':  0b101010,
 	',':  0b1110011,
 	'-':  0b1100001,
@@ -52,10 +43,7 @@ var codes = []uint8{
 	'8':  0b100111,
 	'9':  0b101111,
 	':':  0b1000111,
-	';':  Unsupported, // unsupported
-	'<':  Unsupported, // unsupported
 	'=':  0b110001,
-	'>':  Unsupported, // unsupported
 	'?':  0b1001100,
 	'@':  0b1010110,
 	'A':  0b110,
@@ -84,9 +72,4 @@ var codes = []uint8{
 	'X':  0b11001,
 	'Y':  0b11101,
 	'Z':  0b10011,
-	'[':  Unsupported, // unsupported
-	'\\': Unsupported, // unsupported
-	']':  Unsupported, // unsupported
-	'^':  0b1101000,   // unsupported, used as alias for end of work)
-	'_':  0b110101,    // unsupported, used as alias for starting signal)
 }

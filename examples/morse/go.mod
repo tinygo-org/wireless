@@ -7,6 +7,7 @@ replace tinygo.org/x/wireless => ../..
 replace tinygo.org/x/wireless/examples/audio => ../audio
 
 require (
+	github.com/chewxy/math32 v1.11.1
 	tinygo.org/x/drivers v0.34.1-0.20260107195827-c21cd39813be
 	tinygo.org/x/wireless v0.0.0-20260121153201-f0d8647de68c
 	tinygo.org/x/wireless/examples/audio v0.0.0-00010101000000-000000000000

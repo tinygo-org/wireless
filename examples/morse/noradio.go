@@ -1,4 +1,4 @@
-//go:build !si5351 && !featherwing
+//go:build !si5351 && !featherwing && !pwm
 
 package main
 

@@ -1,8 +1,9 @@
 // FSK4 modem example
 //
-// tinygo flash -size short -tags=si5351 -target=pico -monitor ./examples/morse
-// tinygo flash -size short -tags=featherwing -target=pybadge -monitor ./examples/morse
-// go run ./examples/morse
+// tinygo flash -size short -tags=si5351 -target=pico -monitor .
+// tinygo flash -size short -tags=featherwing -target=pybadge -monitor .
+// tinygo flash -size short -tags=pwm -target=pico -monitor .
+// go run .
 package main
 
 import (
@@ -27,7 +28,7 @@ func main() {
 		println("Transmitting data:", message)
 		radio.Write(message)
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 
 	time.Sleep(2 * time.Second)

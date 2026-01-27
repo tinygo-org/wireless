@@ -18,7 +18,7 @@ func initRadio() *morse.Morse {
 		panic(err)
 	}
 
-	m := morse.NewMorse(&Si5351Radio{device: dev}, 11_400, 20)
+	m := morse.NewMorse(&Si5351Radio{device: dev}, 540_000, 5)
 	m.Configure()
 
 	return m

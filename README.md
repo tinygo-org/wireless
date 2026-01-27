@@ -112,3 +112,4 @@ https://en.wikipedia.org/wiki/WSPR_(amateur_radio_software)
 
 - si5351
 - SX126X
+- PWM pin (limited range, should be used with a appropriate low-pass filter)

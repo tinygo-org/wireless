@@ -12,7 +12,7 @@ import (
 func initRadio() *fsk4.FSK4 {
 	player := audio.NewPlayer()
 
-	fsk := fsk4.NewFSK4(player, 440, 22000, 100*time.Millisecond)
+	fsk := fsk4.NewFSK4(player, 440, 2200, 100*time.Millisecond)
 	fsk.Configure()
 
 	return fsk

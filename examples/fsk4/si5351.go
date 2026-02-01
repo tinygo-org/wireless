@@ -17,7 +17,7 @@ func initRadio() *fsk4.FSK4 {
 		panic(err)
 	}
 
-	f := fsk4.NewFSK4(&Si5351Radio{device: dev}, 14_097_060, 146, 682*time.Millisecond)
+	f := fsk4.NewFSK4(&Si5351Radio{device: dev}, 540_000, 270, 10*time.Millisecond)
 	f.Configure()
 
 	return f

@@ -27,6 +27,10 @@ func initRadio() *morse.Morse {
 	println("Initializing SX127x FeatherWing...")
 
 	dev := sx127x.New(spi, rstPin)
+	rc := sx127x.NewRadioControl(csPin, dio0Pin, dio1Pin)
+	if err := dev.SetRadioController(rc); err != nil {
+		panic(err)
+	}
 
 	println("resetting device")
 	dev.Reset()
@@ -40,7 +44,7 @@ func initRadio() *morse.Morse {
 	println("setting OOK modulation")
 	dev.SetModulationType(sx127x.SX127X_OPMODE_MODULATION_OOK)
 
-	m := morse.NewMorse(&sx127xRadio{device: dev}, 540_000, 20)
+	m := morse.NewMorse(&sx127xRadio{device: dev}, 540_000, 5)
 	m.Configure()
 
 	return m

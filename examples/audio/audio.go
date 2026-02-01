@@ -14,7 +14,7 @@ type Player struct {
 }
 
 func NewPlayer() *Player {
-	sr := beep.SampleRate(44100)
+	sr := beep.SampleRate(11050)
 	speaker.Init(sr, sr.N(time.Second/10))
 
 	return &Player{sr: sr}

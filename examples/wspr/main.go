@@ -1,6 +1,7 @@
 // WSPR example
 //
-// tinygo flash -size short -tags=si5351 -target=pico -monitor ./examples/wspr
+// This code must start exactly on an even minute boundary to conform with WSPR timing.
+// tinygo flash -size short -tags=si5351 -target=pico2 -monitor .
 // tinygo flash -size short -tags=featherwing -target=pybadge -monitor ./examples/wspr
 // go run ./examples/wspr
 package main
@@ -13,7 +14,6 @@ import (
 
 func main() {
 	println("Starting WSPR communication example...")
-	time.Sleep(2 * time.Second)
 
 	// init the modem
 	println("WSPR modem initialized.")
@@ -39,18 +39,11 @@ func main() {
 	}
 
 	// transmit some data
-	for range 50 {
-		println("Transmitting WSPR message with", n, "symbols")
-		if err := radio.WriteSymbols(data[:n]); err != nil {
-			println("error transmitting WSPR message:", err.Error())
-			return
-		}
-
-		println("Waiting for next transmission...")
-		time.Sleep(15 * time.Second)
+	println("Transmitting WSPR message with", n, "symbols")
+	if err := radio.WriteSymbols(data[:n]); err != nil {
+		println("error transmitting WSPR message:", err.Error())
+		return
 	}
-
-	time.Sleep(2 * time.Second)
 
 	// put the radio in standby
 	println("Putting radio in standby mode...")

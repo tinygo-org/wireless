@@ -27,6 +27,10 @@ func initRadio() *fsk4.FSK4 {
 	println("Initializing SX127x FeatherWing...")
 
 	dev := sx127x.New(spi, rstPin)
+	rc := sx127x.NewRadioControl(csPin, dio0Pin, dio1Pin)
+	if err := dev.SetRadioController(rc); err != nil {
+		panic(err)
+	}
 
 	println("resetting device")
 	dev.Reset()
@@ -40,7 +44,7 @@ func initRadio() *fsk4.FSK4 {
 	println("setting OOK modulation")
 	dev.SetModulationType(sx127x.SX127X_OPMODE_MODULATION_OOK)
 
-	fsk := fsk4.NewFSK4(&sx127xRadio{device: dev}, 14_097_060, 270, 100*time.Millisecond)
+	fsk := fsk4.NewFSK4(&sx127xRadio{device: dev}, 8_697_000, 146, 682*time.Millisecond)
 	fsk.Configure()
 
 	return fsk
@@ -51,6 +55,7 @@ type sx127xRadio struct {
 }
 
 func (r *sx127xRadio) Transmit(freq uint64) error {
+	println("Setting frequency to", freq)
 	r.device.SetFrequency(uint32(freq))
 	r.device.SetOpMode(sx127x.SX127X_OPMODE_TX)
 

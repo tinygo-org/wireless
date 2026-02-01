@@ -27,7 +27,7 @@ func initRadio() *morse.Morse {
 		return nil
 	}
 
-	samples := make([]uint32, 512)
+	samples := make([]uint32, 344, 512)
 	generateSineWave(samples, 440, sampleRate)
 
 	m := morse.NewMorse(&PinRadio{transmitChannel: transmitChannel, samples: samples}, 540_000, 5)

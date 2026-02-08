@@ -1,4 +1,4 @@
-//go:build !si5351 && !featherwing && !wio_sx1262
+//go:build !si5351 && !featherwing && !pwm && !wio_sx1262
 
 package main
 

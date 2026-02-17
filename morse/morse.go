@@ -92,13 +92,13 @@ func (m *Morse) write(b byte) error {
 	for code != guardBit {
 		if (code & Dash) == 1 {
 			// dash
-			if err := m.radio.Transmit(m.base); err != nil {
+			if err := m.radio.Transmit(m.base * 100); err != nil {
 				return err
 			}
 			time.Sleep(m.dashLength)
 		} else {
 			// dot
-			if err := m.radio.Transmit(m.base); err != nil {
+			if err := m.radio.Transmit(m.base * 100); err != nil {
 				return err
 			}
 			time.Sleep(m.dotLength)

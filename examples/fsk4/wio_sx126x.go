@@ -95,7 +95,8 @@ func (r *sx126xRadio) Transmit(freq uint64) error {
 	}
 	r.transmitting = true
 
-	r.device.SetRfFrequency(uint32(freq))
+	freqHz := freq / 100 // freq is in hundredths of Hz
+	r.device.SetRfFrequency(uint32(freqHz))
 	r.device.SetTxContinuousWave()
 
 	return nil

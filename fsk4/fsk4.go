@@ -21,7 +21,7 @@ type FSK4 struct {
 // NewFSK4 creates a new FSK4 modem instance.
 // radio: the Radio interface implementation
 // base: the base frequency in Hz
-// shift: the frequency shift in Hz*100 eg. 270 = 2.7 Hz
+// shift: the frequency shift in Hz
 // rate: the send rate
 func NewFSK4(radio Radio, base uint64, shift uint32, rate time.Duration) *FSK4 {
 	return &FSK4{
@@ -131,7 +131,7 @@ func (r *FSK4) writeByte(data byte) error {
 
 func (r *FSK4) tone(symbol byte) error {
 	start := time.Now()
-	freq := r.base*100 + uint64(r.tones[symbol])
+	freq := r.base + uint64(r.tones[symbol])
 	if err := r.radio.Transmit(freq); err != nil {
 		return err
 	}
